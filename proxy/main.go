@@ -40,7 +40,7 @@ func (p *Proxy) Run() {
 	if err != nil {
 		panic(err)
 	}
-	n := negroni.New() // Includes some default middlewares
+	n := negroni.New()
 	if p.debug {
 		n.Use(negroni.NewLogger())
 	}
