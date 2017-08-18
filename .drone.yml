@@ -1,0 +1,13 @@
+workspace:
+  base: /drone/src
+  path: /usr/local/src/github.com/qnib/doxy
+
+pipeline:
+  alpine:
+    image: qnib/alplain-golang
+    commands:
+      - govendor build -o doxy_alpine
+  x86:
+      image: qnib/uplain-golang
+      commands:
+        - govendor build -o doxy_x86

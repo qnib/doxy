@@ -1,0 +1,14 @@
+# List and inspect containers
+^/(v\d\.\d+/)?containers(/\w+)?/json$
+# List and inspect services
+^/(v\d\.\d+/)?services(/[0-9a-f]+)?$
+# List and inspect tasks
+^/(v\d\.\d+/)?tasks(/\w+)?$
+# List and inspect networks
+^/(v\d\.\d+/)?networks(/\w+)?$
+# List and inspect nodes
+^/(v\d\.\d+/)?nodes(/\w+)?$
+# Show engine info
+^/(v\d\.\d+/)?info$
+# Healthcheck
+^/_ping$

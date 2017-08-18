@@ -1,0 +1,49 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "Pc2ORQp+VY3Un/dkh4QwLC7R6lE=",
+			"path": "github.com/BurntSushi/toml",
+			"revision": "a368813c5e648fee92e5f6c30e3944ff9d5e8895",
+			"revisionTime": "2017-06-26T11:06:00Z"
+		},
+		{
+			"checksumSHA1": "FErdaG0vJrWecQqeMJKWS+alUKA=",
+			"path": "github.com/codegangsta/cli",
+			"revision": "f017f86fccc5a039a98f23311f34fdf78b014f78",
+			"revisionTime": "2017-08-13T14:59:49Z"
+		},
+		{
+			"checksumSHA1": "ImX1uv6O09ggFeBPUJJ2nu7MPSA=",
+			"path": "github.com/ghodss/yaml",
+			"revision": "0ca9ea5df5451ffdf184b4428c902747c2c11cd7",
+			"revisionTime": "2017-03-27T23:54:44Z"
+		},
+		{
+			"checksumSHA1": "87LEfpY9cOk9CP7pWyIbmQ/6enU=",
+			"path": "github.com/go-ini/ini",
+			"revision": "c787282c39ac1fc618827141a1f762240def08a3",
+			"revisionTime": "2017-08-13T05:22:30Z"
+		},
+		{
+			"checksumSHA1": "GtGbyysLRYLXuY2vL0mUYeN6jL4=",
+			"path": "github.com/urfave/negroni",
+			"revision": "c262547a5086067ebe455c81db5cc52eb298ac3c",
+			"revisionTime": "2017-08-09T18:06:16Z"
+		},
+		{
+			"checksumSHA1": "m8hYD/alsufIYIM7sR06wbL+dKo=",
+			"path": "github.com/zpatrick/go-config",
+			"revision": "710646a45582fde23bf77bacbc2f38008dc7ffc2",
+			"revisionTime": "2016-11-18T20:29:31Z"
+		},
+		{
+			"checksumSHA1": "RDJpJQwkF012L6m/2BJizyOksNw=",
+			"path": "gopkg.in/yaml.v2",
+			"revision": "eb3733d160e74a9c7e442f435eb3bea458e1d19f",
+			"revisionTime": "2017-08-12T16:00:11Z"
+		}
+	],
+	"rootPath": "github.com/qnib/doxy"
+}
