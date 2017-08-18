@@ -62,7 +62,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "Start container to terminate SSL for others."
 	app.Usage = "go-byfahrer [options]"
-	app.Version = "0.0.0"
+	app.Version = "0.1.0"
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:  "docker-socket",
