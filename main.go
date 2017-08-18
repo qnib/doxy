@@ -60,8 +60,8 @@ func RunApp(ctx *cli.Context) {
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "Start container to terminate SSL for others."
-	app.Usage = "go-byfahrer [options]"
+	app.Name = "Proxy Docker unix socket to filter out insecure, harmful requests."
+	app.Usage = "doxy [options]"
 	app.Version = "0.1.0"
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
