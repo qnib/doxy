@@ -10,22 +10,6 @@ import (
 	"strings"
 )
 
-func ReadPatterns(path string) (patterns []string, err error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return
-	}
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := scanner.Text()
-		if ! strings.HasPrefix(line, "#") {
-			patterns = append(patterns, line)
-		}
-	}
-	return
-}
 
 func RunApp(ctx *cli.Context) {
 	log.Printf("[II] Start Version: %s", ctx.App.Version)
@@ -34,7 +18,12 @@ func RunApp(ctx *cli.Context) {
 	dockerSock, _ := cfg.String("docker-socket")
 	debug, _ := cfg.Bool("debug")
 	patternsFile, _ := cfg.String("pattern-file")
-	patterns, err  := ReadPatterns(patternsFile)
+	reader, err := os.Open(patternsFile)
+	if err != nil {
+		return
+	}
+	defer reader.Close()
+	patterns, err  := proxy.ReadPatterns(reader)
 	if err != nil {
 		log.Printf("Error reading patterns file (%s), using default patterns\n", err.Error())
 		patterns = []string{
