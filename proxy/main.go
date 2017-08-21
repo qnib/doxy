@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"log"
 	"net/http"
 	"os"
 	"syscall"
@@ -45,6 +46,7 @@ func (p *Proxy) Run() {
 		n.Use(negroni.NewLogger())
 	}
 	n.UseHandler(upstream)
+	log.Printf("Serving proxy on '%s'", p.newSocket)
 	if err = http.Serve(l, n); err != nil {
 		panic(err)
 	}

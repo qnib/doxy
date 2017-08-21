@@ -36,18 +36,22 @@ See 'docker run --help'.
 Once the method is checked, a list of regular expressions are checked. In version 0.1.0 the list reads:
 
 ```bash
-# List and inspect containers
-^/(v\d\.\d+/)?containers(/\w+)?/json$
+# List, inspect, metrics and processes of containers
+^/(v\d\.\d+/)?containers(/\w+)?/(json|stats|top)$
 # List and inspect services
 ^/(v\d\.\d+/)?services(/[0-9a-f]+)?$
 # List and inspect tasks
 ^/(v\d\.\d+/)?tasks(/\w+)?$
 # List and inspect networks
 ^/(v\d\.\d+/)?networks(/\w+)?$
+# List and inspect volumes
+^/(v\d\.\d+/)?volumes(/\w+)?$
 # List and inspect nodes
 ^/(v\d\.\d+/)?nodes(/\w+)?$
 # Show engine info
 ^/(v\d\.\d+/)?info$
+# Show engine version
+^/(v\d\.\d+/)?version$
 # Healthcheck
 ^/_ping$
 ```

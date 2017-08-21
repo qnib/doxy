@@ -6,8 +6,6 @@ import (
 	"github.com/zpatrick/go-config"
 	"github.com/codegangsta/cli"
 	"github.com/qnib/doxy/proxy"
-	"bufio"
-	"strings"
 )
 
 
@@ -19,20 +17,19 @@ func RunApp(ctx *cli.Context) {
 	debug, _ := cfg.Bool("debug")
 	patternsFile, _ := cfg.String("pattern-file")
 	reader, err := os.Open(patternsFile)
-	if err != nil {
-		return
-	}
 	defer reader.Close()
-	patterns, err  := proxy.ReadPatterns(reader)
+	patterns := []string{}
 	if err != nil {
 		log.Printf("Error reading patterns file (%s), using default patterns\n", err.Error())
 		patterns = []string{
-			`^/(v\d\.\d+/)?containers(/\w+)?/json$`,
+			`^/(v\d\.\d+/)?containers(/\w+)?/(json|stats|top)$`,
 			`^/(v\d\.\d+/)?services(/[0-9a-f]+)?$`,
 			`^/(v\d\.\d+/)?tasks(/\w+)?$`,
 			`^/(v\d\.\d+/)?networks(/\w+)?$`,
+			`^/(v\d\.\d+/)?volumes(/\w+)?$`,
 			`^/(v\d\.\d+/)?nodes(/\w+)?$`,
 			`^/(v\d\.\d+/)?info$`,
+			`^/(v\d\.\d+/)?version$`,
 			"^/_ping$",
 		}
 		if debug {
@@ -41,6 +38,8 @@ func RunApp(ctx *cli.Context) {
 			}
 
 		}
+	} else {
+		patterns, err  = proxy.ReadPatterns(reader)
 	}
 	p := proxy.NewProxy(newSock, dockerSock, debug)
 	p.AddPatterns(patterns)
