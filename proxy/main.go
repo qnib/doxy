@@ -7,7 +7,26 @@ import (
 	"syscall"
 	"os/signal"
 	"github.com/urfave/negroni"
+)
 
+const (
+	DOCKER_SOCKET = "/var/run/docker.sock"
+	PROXY_SOCKET = "/tmp/doxy.sock"
+	PATTERN_FILE = "/etc/doxy.pattern"
+)
+
+var (
+	DEFAULT_PATTERNS = []string{
+		`^/(v\d\.\d+/)?containers(/\w+)?/(json|stats|top)$`,
+		`^/(v\d\.\d+/)?services(/[0-9a-f]+)?$`,
+		`^/(v\d\.\d+/)?tasks(/\w+)?$`,
+		`^/(v\d\.\d+/)?networks(/\w+)?$`,
+		`^/(v\d\.\d+/)?volumes(/\w+)?$`,
+		`^/(v\d\.\d+/)?nodes(/\w+)?$`,
+		`^/(v\d\.\d+/)?info$`,
+		`^/(v\d\.\d+/)?version$`,
+		"^/_ping$",
+	}
 )
 
 type Proxy struct {
@@ -16,21 +35,27 @@ type Proxy struct {
 	patterns 				[]string
 }
 
-func NewProxy(newsock, oldsock string, debug bool) Proxy {
+func NewProxy(opts ...ProxyOption) Proxy {
+	options := defaultProxyOptions
+	for _, o := range opts {
+		o(&options)
+	}
 	return Proxy{
-		dockerSocket: oldsock,
-		newSocket: newsock,
-		debug: debug,
-		patterns: []string{},
+		dockerSocket: options.DockerSocket,
+		newSocket: options.ProxySocket,
+		debug: options.Debug,
+		patterns: options.Patterns,
 	}
 }
 
-func (p *Proxy) AddPatterns(patterns []string) {
-	p.patterns = append(p.patterns,patterns...)
-}
-
-func (p *Proxy) AddPattern(pattern string) {
-	p.patterns = append(p.patterns,pattern)
+func (p *Proxy) GetOptions() map[string]interface{} {
+	opt := map[string]interface{}{
+		"docker-socket": p.dockerSocket,
+		"proxy-socket": p.newSocket,
+		"debug": p.debug,
+		"patterns": p.patterns,
+	}
+	return opt
 }
 
 func (p *Proxy) Run() {
