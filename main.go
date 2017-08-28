@@ -6,7 +6,6 @@ import (
 	"github.com/zpatrick/go-config"
 	"github.com/codegangsta/cli"
 	"github.com/qnib/doxy/proxy"
-	"fmt"
 )
 
 var (
@@ -36,9 +35,6 @@ var (
 )
 
 func EvalOptions(cfg *config.Config) (po []proxy.ProxyOption) {
-	s, _ := cfg.Settings()
-	ps, _ := cfg.String("proxy-socket")
-	fmt.Printf("%v | dS:%s\n", s, ps)
 	proxySock, _ := cfg.String("proxy-socket")
 	po = append(po, proxy.WithProxySocket(proxySock))
 	dockerSock, _ := cfg.String("docker-socket")
