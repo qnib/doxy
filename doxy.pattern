@@ -16,3 +16,5 @@
 ^/(v\d\.\d+/)?version$
 # Healthcheck
 ^/_ping$
+# List and inspect images
+^/(v\d\.\d+/)?images(/\w+)?$
