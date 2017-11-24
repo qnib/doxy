@@ -4,6 +4,8 @@
 ^/(v\d\.\d+/)?services(/[0-9a-f]+)?$
 # List and inspect tasks
 ^/(v\d\.\d+/)?tasks(/\w+)?$
+# List and inspect images
+^/(v\d\.\d+/)?images(/\w+)?$
 # List and inspect networks
 ^/(v\d\.\d+/)?networks(/\w+)?$
 # List and inspect volumes
@@ -16,5 +18,3 @@
 ^/(v\d\.\d+/)?version$
 # Healthcheck
 ^/_ping$
-# List and inspect images
-^/(v\d\.\d+/)?images(/\w+)?$

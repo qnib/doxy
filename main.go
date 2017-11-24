@@ -59,6 +59,12 @@ var (
 		Usage: "File holding line-separated regex-patterns to be allowed (comments allowed, use #)",
 		EnvVar: "DOXY_PATTERN_FILE",
 	}
+	deviceFileFlag = cli.StringFlag{
+		Name:  "device-file",
+		Value: proxy.DEVICE_FILE,
+		Usage: "File holding line-separated devices to be mapped in when in (GPU|HPC) mode (comments allowed, use #)",
+		EnvVar: "DOXY_DEVICE_FILE",
+	}
 )
 
 func EvalOptions(cfg *config.Config) (po []proxy.ProxyOption) {
@@ -90,8 +96,23 @@ func EvalPatternOpts(cfg *config.Config) (proxy.ProxyOption) {
 		os.Exit(1)
 
 	}
-	patterns, err  = proxy.ReadPatterns(reader)
+	patterns, err  = proxy.ReadLineFile(reader)
 	return proxy.WithPatterns(patterns)
+}
+
+func EvalDevicesOpts(cfg *config.Config) (proxy.ProxyOption) {
+	deviceFile, _ := cfg.String("device-file")
+	reader, err := os.Open(deviceFile)
+	defer reader.Close()
+	devices := []string{}
+	if err != nil {
+		return proxy.WithPatterns(proxy.DEVICES)
+	}
+	devices, err  = proxy.ReadLineFile(reader)
+	if err != nil {
+		log.Printf("Error while reading device file: %s", err.Error())
+	}
+	return proxy.WithDevMappings(devices)
 }
 
 func EvalBindMountOpts(cfg *config.Config) (proxy.ProxyOption) {
@@ -106,6 +127,7 @@ func RunApp(ctx *cli.Context) {
 	cfg := config.NewConfig([]config.Provider{config.NewCLI(ctx, true)})
 	po := EvalOptions(cfg)
 	po = append(po, EvalPatternOpts(cfg))
+	po = append(po, EvalDevicesOpts(cfg))
 	po = append(po, EvalBindMountOpts(cfg))
 	p := proxy.NewProxy(po...)
 	p.Run()
@@ -121,6 +143,7 @@ func main() {
 		proxySocketFlag,
 		debugFlag,
 		gpuEnabled,
+		deviceFileFlag,
 		patternFileFlag,
 		proxyPatternKey,
 		bindAddFlag,

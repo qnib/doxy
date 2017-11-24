@@ -121,12 +121,9 @@ func (u *UpStream) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		if u.gpu {
 			fmt.Println("Add GPU stuff")
 			// TODO: Be smarter about the version of the driver
-			hostConfig.Binds = append(hostConfig.Binds, "/var/lib/nvidia-docker/volumes/nvidia_driver/384.81/:/usr/local/nvidia/")
-			devMappings = append(devMappings, "/dev/nvidia0:/dev/nvidia0:rwm")
-			devMappings = append(devMappings, "/dev/nvidia-uvm:/dev/nvidia-uvm:rwm")
-			devMappings = append(devMappings, "/dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools:rwm")
-			devMappings = append(devMappings, "/dev/nvidiactl:/dev/nvidiactl:rwm")
+			hostConfig.Binds = append(hostConfig.Binds, "/usr/lib/nvidia-384/:/usr/local/nvidia/")
 			config.Env = append(config.Env, "PATH=/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin")
+			config.Env = append(config.Env, "LD_LIBRARY_PATH=/usr/local/nvidia/")
 		}
 		for _, bMount := range u.bindMounts {
 			if bMount == "" {

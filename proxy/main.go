@@ -13,6 +13,7 @@ const (
 	DOCKER_SOCKET = "/var/run/docker.sock"
 	PROXY_SOCKET = "/tmp/doxy.sock"
 	PATTERN_FILE = "/etc/doxy.pattern"
+	DEVICE_FILE = "/etc/doxy.devices"
 )
 
 var (
@@ -29,14 +30,16 @@ var (
 	}
 	HPC_PAT = []string{
 		`^/(v\d\.\d+/)?containers(/\w+)?/(json|stats|top|create|start|run|kill)$`,
-		`^/(v\d\.\d+/)?services(/[0-9a-f]+)?$`,
-		`^/(v\d\.\d+/)?tasks(/\w+)?$`,
-		`^/(v\d\.\d+/)?networks(/\w+)?$`,
-		`^/(v\d\.\d+/)?volumes(/\w+)?$`,
-		`^/(v\d\.\d+/)?nodes(/\w+)?$`,
+		`^/(v\d\.\d+/)?images(/\w+)?/(json|pull)$`,
 		`^/(v\d\.\d+/)?info$`,
+		`^/(v\d\.\d+/)?images(/\w+)?/(pull)$`,
 		`^/(v\d\.\d+/)?version$`,
 		"^/_ping$",
+	}
+	DEVICES = []string{
+		"/dev/nvidia0:/dev/nvidia0:rwm",
+		"/dev/nvidia-uvm:/dev/nvidia-uvm:rwm",
+		"/dev/nvidiactl:/dev/nvidiactl:rwm",
 	}
 	PATTERNS = map[string][]string{
 		"default": DEF_PAT,
