@@ -6,6 +6,7 @@ import (
 	"github.com/zpatrick/go-config"
 	"github.com/codegangsta/cli"
 	"github.com/qnib/doxy/proxy"
+	"strings"
 )
 
 var (
@@ -21,10 +22,36 @@ var (
 		Usage: "Proxy socket to be created",
 		EnvVar: "DOXY_PROXY_SOCKET",
 	}
+	proxyPatternKey = cli.StringFlag{
+		Name:  "pattern-key",
+		Value: "default",
+		Usage: "pattern key predefined",
+		EnvVar: "DOXY_PATTERN_KEY",
+	}
+	gpuEnabled = cli.BoolFlag{
+		Name: "gpu",
+		Usage: "Map devices, bind-mounts and environment into each container to allow GPU usage",
+		EnvVar: "DOXY_GPU_ENABLED",
+	}
+	constrainUser = cli.BoolFlag{
+		Name: "user-pinning",
+		Usage: "Pin user within container to the UID calling the command",
+		EnvVar: "DOXY_USER_PINNING_ENABLED",
+	}
 	debugFlag = cli.BoolFlag{
 		Name: "debug",
 		Usage: "Print proxy requests",
 		EnvVar: "DOXY_DEBUG",
+	}
+	bindAddFlag = cli.StringFlag{
+		Name: "add-binds",
+		Usage: "Comma separated list of bind-mounts to add",
+		EnvVar: "DOXY_ADDITIONAL_BINDS",
+	}
+	devMapFlag = cli.StringFlag{
+		Name: "device-mappings",
+		Usage: "Comma separated list of device mappings",
+		EnvVar: "DOXY_DEVICE_MAPPINGS",
 	}
 	patternFileFlag = cli.StringFlag{
 		Name:  "pattern-file",
@@ -41,6 +68,10 @@ func EvalOptions(cfg *config.Config) (po []proxy.ProxyOption) {
 	po = append(po, proxy.WithDockerSocket(dockerSock))
 	debug, _ := cfg.Bool("debug")
 	po = append(po, proxy.WithDebugValue(debug))
+	devMaps, _ := cfg.String("device-mappings")
+	gpu, _ := cfg.Bool("gpu")
+	po = append(po, proxy.WithGpuValue(gpu))
+	po = append(po, proxy.WithDevMappings(strings.Split(devMaps,",")))
 	return
 }
 
@@ -50,18 +81,32 @@ func EvalPatternOpts(cfg *config.Config) (proxy.ProxyOption) {
 	defer reader.Close()
 	patterns := []string{}
 	if err != nil {
-		log.Printf("Error reading patterns file (%s), using default patterns\n", err.Error())
-		return proxy.WithPatterns(proxy.DEFAULT_PATTERNS)
+		patternsKey, _ := cfg.String("pattern-key")
+		if patterns, ok := proxy.PATTERNS[patternsKey]; ok {
+			log.Printf("Error reading patterns file '%s', using %s patterns\n", err.Error(), patternsKey)
+			return proxy.WithPatterns(patterns)
+		}
+		log.Printf("Could not find pattern-key '%s'\n", patternsKey)
+		os.Exit(1)
+
 	}
 	patterns, err  = proxy.ReadPatterns(reader)
 	return proxy.WithPatterns(patterns)
 }
+
+func EvalBindMountOpts(cfg *config.Config) (proxy.ProxyOption) {
+	bindStr, _ := cfg.String("add-binds")
+	bindMounts := strings.Split(bindStr,",")
+	return proxy.WithBindMounts(bindMounts)
+}
+
 
 func RunApp(ctx *cli.Context) {
 	log.Printf("[II] Start Version: %s", ctx.App.Version)
 	cfg := config.NewConfig([]config.Provider{config.NewCLI(ctx, true)})
 	po := EvalOptions(cfg)
 	po = append(po, EvalPatternOpts(cfg))
+	po = append(po, EvalBindMountOpts(cfg))
 	p := proxy.NewProxy(po...)
 	p.Run()
 }
@@ -75,7 +120,10 @@ func main() {
 		dockerSocketFlag,
 		proxySocketFlag,
 		debugFlag,
+		gpuEnabled,
 		patternFileFlag,
+		proxyPatternKey,
+		bindAddFlag,
 	}
 	app.Action = RunApp
 	app.Run(os.Args)

@@ -16,7 +16,7 @@ GLOBAL OPTIONS:
 $ ./doxy_darwin
 2017/08/18 11:37:43 [II] Start Version: 0.1.0
 2017/08/18 11:37:43 Error reading patterns file (open /etc/doxy.pattern: no such file or directory), using default patterns
-2017/08/18 11:37:43 [gk-soxy] Listening on /tmp/doxy.sock
+2017/08/18 11:37:43 [doxy] Listening on /tmp/doxy.sock
 ```
 
 ## Filter mechanism
@@ -79,7 +79,7 @@ $ ./doxy_darwin -debug
 2017/08/18 11:44:50 4  : ^/(v\d\.\d+/)?nodes(/\w+)?$
 2017/08/18 11:44:50 5  : ^/(v\d\.\d+/)?info$
 2017/08/18 11:44:50 6  : ^/_ping$
-2017/08/18 11:44:50 [gk-soxy] Listening on /tmp/doxy.sock
+2017/08/18 11:44:50 [doxy] Listening on /tmp/doxy.sock
 [negroni] 2017-08-18T11:45:00+02:00 | 200 | 	 3.800713ms | docker | GET /_ping
 [negroni] 2017-08-18T11:45:00+02:00 | 403 | 	 34.067µs | docker | GET /v1.31/containers/a62250e0890a/export
 [negroni] 2017-08-18T11:45:04+02:00 | 200 | 	 1.800044ms | docker | GET /_ping

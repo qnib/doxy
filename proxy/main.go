@@ -16,7 +16,7 @@ const (
 )
 
 var (
-	DEFAULT_PATTERNS = []string{
+	DEF_PAT = []string{
 		`^/(v\d\.\d+/)?containers(/\w+)?/(json|stats|top)$`,
 		`^/(v\d\.\d+/)?services(/[0-9a-f]+)?$`,
 		`^/(v\d\.\d+/)?tasks(/\w+)?$`,
@@ -27,12 +27,28 @@ var (
 		`^/(v\d\.\d+/)?version$`,
 		"^/_ping$",
 	}
+	HPC_PAT = []string{
+		`^/(v\d\.\d+/)?containers(/\w+)?/(json|stats|top|create|start|run|kill)$`,
+		`^/(v\d\.\d+/)?services(/[0-9a-f]+)?$`,
+		`^/(v\d\.\d+/)?tasks(/\w+)?$`,
+		`^/(v\d\.\d+/)?networks(/\w+)?$`,
+		`^/(v\d\.\d+/)?volumes(/\w+)?$`,
+		`^/(v\d\.\d+/)?nodes(/\w+)?$`,
+		`^/(v\d\.\d+/)?info$`,
+		`^/(v\d\.\d+/)?version$`,
+		"^/_ping$",
+	}
+	PATTERNS = map[string][]string{
+		"default": DEF_PAT,
+		"hpc": HPC_PAT,
+	}
 )
 
 type Proxy struct {
 	dockerSocket, newSocket string
-	debug 					bool
+	debug, gpu 				bool
 	patterns 				[]string
+	bindMounts,devMappings	[]string
 }
 
 func NewProxy(opts ...ProxyOption) Proxy {
@@ -44,7 +60,10 @@ func NewProxy(opts ...ProxyOption) Proxy {
 		dockerSocket: options.DockerSocket,
 		newSocket: options.ProxySocket,
 		debug: options.Debug,
+		gpu: options.Gpu,
 		patterns: options.Patterns,
+		bindMounts: options.BindMounts,
+		devMappings: options.DevMappings,
 	}
 }
 
@@ -59,7 +78,7 @@ func (p *Proxy) GetOptions() map[string]interface{} {
 }
 
 func (p *Proxy) Run() {
-	upstream := NewUpstream(p.dockerSocket, p.patterns)
+	upstream := NewUpstream(p.dockerSocket, p.patterns, p.bindMounts, p.devMappings, p.gpu)
 	sigc := make(chan os.Signal, 1)
 	signal.Notify(sigc, os.Interrupt, os.Kill, syscall.SIGTERM)
 	l, err := ListenToNewSock(p.newSocket, sigc)
