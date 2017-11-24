@@ -1,0 +1,14 @@
+ARG DOCKER_REG=docker.io
+FROM ${DOCKER_REG}/qnib/uplain-golang:1.9.2 AS build
+
+WORKDIR /usr/local/src/github.com/qnib/doxy
+COPY main.go ./main.go
+COPY proxy ./proxy
+COPY vendor/ vendor/
+RUN govendor install
+
+## Build final image
+FROM ${DOCKER_REG}/qnib/uplain-init
+
+COPY --from=build /usr/local/bin/doxy /usr/local/bin/
+CMD ["/usr/local/bin/doxy"]
