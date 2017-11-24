@@ -32,7 +32,7 @@ var (
 		`^/(v\d\.\d+/)?containers(/\w+)?/(json|stats|top|create|start|run|kill)$`,
 		`^/(v\d\.\d+/)?images(/\w+)?/(json|pull)$`,
 		`^/(v\d\.\d+/)?info$`,
-		`^/(v\d\.\d+/)?images(/\w+)?/(pull)$`,
+		`^/(v\d\.\d+/)?images/(pull|create)$`,
 		`^/(v\d\.\d+/)?version$`,
 		"^/_ping$",
 	}

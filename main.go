@@ -97,6 +97,7 @@ func EvalPatternOpts(cfg *config.Config) (proxy.ProxyOption) {
 
 	}
 	patterns, err  = proxy.ReadLineFile(reader)
+	log.Printf("Patterns read from '%s':\n%s\n", patternsFile, strings.Join(patterns,"\n  "))
 	return proxy.WithPatterns(patterns)
 }
 
@@ -106,7 +107,7 @@ func EvalDevicesOpts(cfg *config.Config) (proxy.ProxyOption) {
 	defer reader.Close()
 	devices := []string{}
 	if err != nil {
-		return proxy.WithPatterns(proxy.DEVICES)
+		return proxy.WithDevMappings(proxy.DEVICES)
 	}
 	devices, err  = proxy.ReadLineFile(reader)
 	if err != nil {
