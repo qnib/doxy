@@ -15,4 +15,4 @@
 
 # binaries
 **/doxy_*
-
+.idea/
