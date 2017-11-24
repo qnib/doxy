@@ -3,15 +3,20 @@ package proxy
 type ProxyOptions struct {
 	DockerSocket 	string
 	ProxySocket 	string
-	Debug 			bool
+	Debug,Gpu 			bool
 	Patterns 		[]string
+	BindMounts		[]string
+	DevMappings		[]string
 }
 
 var defaultProxyOptions = ProxyOptions{
 	DockerSocket: DOCKER_SOCKET,
 	ProxySocket: PROXY_SOCKET,
 	Debug: false,
+	Gpu: false,
 	Patterns: []string{},
+	BindMounts: []string{},
+	DevMappings: []string{},
 }
 
 type ProxyOption func(*ProxyOptions)
@@ -40,6 +45,12 @@ func WithDebugEnabled() ProxyOption {
 	}
 }
 
+func WithGpuValue(b bool) ProxyOption {
+	return func(o *ProxyOptions) {
+		o.Gpu = b
+	}
+}
+
 func WithPattern(p string) ProxyOption {
 	return func(o *ProxyOptions) {
 		o.Patterns = append(o.Patterns, p)
@@ -52,3 +63,14 @@ func WithPatterns(p []string) ProxyOption {
 	}
 }
 
+func WithBindMounts(bm []string) ProxyOption {
+	return func(o *ProxyOptions) {
+		o.BindMounts = bm
+	}
+}
+
+func WithDevMappings(dm []string) ProxyOption {
+	return func(o *ProxyOptions) {
+		o.DevMappings = dm
+	}
+}
