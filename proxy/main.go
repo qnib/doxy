@@ -29,7 +29,7 @@ var (
 		"^/_ping$",
 	}
 	HPC_PAT = []string{
-		`^/(v\d\.\d+/)?containers(/\w+)?/(json|stats|top|create|start|run|kill)$`,
+		`^/(v\d\.\d+/)?containers(/\w+)?/(json|stats|top|logs|create|start|run|kill)$`,
 		`^/(v\d\.\d+/)?images(/\w+)?/(json|pull)$`,
 		`^/(v\d\.\d+/)?info$`,
 		`^/(v\d\.\d+/)?images/(pull|create)$`,
