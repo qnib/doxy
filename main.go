@@ -59,6 +59,11 @@ var (
 		Usage: "File holding line-separated regex-patterns to be allowed (comments allowed, use #)",
 		EnvVar: "DOXY_PATTERN_FILE",
 	}
+	pinUserFlag = cli.StringFlag{
+		Name:  "pin-user",
+		Usage: "Overwrite `--user` with given value",
+		EnvVar: "DOXY_PIN_USER",
+	}
 	deviceFileFlag = cli.StringFlag{
 		Name:  "device-file",
 		Value: proxy.DEVICE_FILE,
@@ -74,10 +79,12 @@ func EvalOptions(cfg *config.Config) (po []proxy.ProxyOption) {
 	po = append(po, proxy.WithDockerSocket(dockerSock))
 	debug, _ := cfg.Bool("debug")
 	po = append(po, proxy.WithDebugValue(debug))
-	devMaps, _ := cfg.String("device-mappings")
 	gpu, _ := cfg.Bool("gpu")
 	po = append(po, proxy.WithGpuValue(gpu))
+	devMaps, _ := cfg.String("device-mappings")
 	po = append(po, proxy.WithDevMappings(strings.Split(devMaps,",")))
+	pinUser, _ := cfg.String("pin-user")
+	po = append(po, proxy.WithPinUserValue(pinUser))
 	return
 }
 
@@ -148,6 +155,7 @@ func main() {
 		patternFileFlag,
 		proxyPatternKey,
 		bindAddFlag,
+		pinUserFlag,
 	}
 	app.Action = RunApp
 	app.Run(os.Args)
