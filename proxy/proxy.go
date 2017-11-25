@@ -21,14 +21,15 @@ import (
 
 // UpStream creates upstream handler struct
 type UpStream struct {
-	Name  		string
-	proxy 		http.Handler
+	Name  			string
+	proxy 			http.Handler
 	// TODO: Kick out separat config options and use more generic one
-	allowed 	[]*regexp.Regexp
-	bindMounts 	[]string
-	devMappings []string
-	gpu 		bool
-	pinUser 	string
+	allowed 		[]*regexp.Regexp
+	bindMounts 		[]string
+	devMappings 	[]string
+	gpu 			bool
+	pinUser 		string
+	pinUserEnabled	bool
 }
 
 // UnixSocket just provides the path, so that I can test it
@@ -64,8 +65,27 @@ func newReverseProxy(dial func(network, addr string) (net.Conn, error)) *httputi
 	}
 }
 
+func NewUpstreamPO(po ProxyOptions) *UpStream {
+	us := NewUnixSocket(po.ProxySocket)
+	a := []*regexp.Regexp{}
+	for _, r := range po.Patterns {
+		p, _ := regexp.Compile(r)
+		a = append(a, p)
+	}
+	upstream := &UpStream{
+		Name:  po.ProxySocket,
+		proxy: newReverseProxy(us.connectSocket),
+		allowed: a,
+		bindMounts: po.BindMounts,
+		devMappings: po.DevMappings,
+		gpu: po.Gpu,
+		pinUser: po.PinUser,
+		pinUserEnabled: po.PinUserEnabled,
+	}
+	return upstream
+}
 // NewUpstream returns a new socket (magic)
-func NewUpstream(socket string, regs []string, binds []string, devs []string, gpu bool, pinUser string) *UpStream {
+func NewUpstream(socket string, regs []string, binds []string, devs []string, gpu bool, pinUser string, pinUserB bool) *UpStream {
 	us := NewUnixSocket(socket)
 	a := []*regexp.Regexp{}
 	for _, r := range regs {
@@ -80,6 +100,7 @@ func NewUpstream(socket string, regs []string, binds []string, devs []string, gp
 		devMappings: devs,
 		gpu: gpu,
 		pinUser: pinUser,
+		pinUserEnabled: pinUserB,
 	}
 	return upstream
 }
@@ -141,14 +162,20 @@ func (u *UpStream) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			config.Env = append(config.Env, "PATH=/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin")
 			config.Env = append(config.Env, "LD_LIBRARY_PATH=/usr/local/nvidia/")
 		}
-		if u.pinUser != "" {
+		if u.pinUserEnabled {
+			fmt.Print("Alter User setting ")
 			// TODO: Should depend on calling user from syscall.GetsockoptUcred()
-			if config.User != "" {
-				fmt.Printf("Overwrite User with '%s', was '%s'\n", u.pinUser, config.User)
-			} else {
-				fmt.Printf("Overwrite User with '%s'\n", u.pinUser)
+			switch {
+			case config.User != "" && u.pinUser == "":
+				fmt.Printf(" - Remove setting User, was '%s'\n", config.User)
+				config.User = ""
+			case config.User != "" && u.pinUser != "":
+				fmt.Printf(" - Overwrite User with '%s', was '%s'\n", u.pinUser, config.User)
+				config.User = u.pinUser
+			default:
+				fmt.Printf(" - Set User to '%s'\n", u.pinUser)
+				config.User = u.pinUser
 			}
-			config.User = u.pinUser
 		}
 		for _, bMount := range u.bindMounts {
 			if bMount == "" {

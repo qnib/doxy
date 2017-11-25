@@ -33,11 +33,6 @@ var (
 		Usage: "Map devices, bind-mounts and environment into each container to allow GPU usage",
 		EnvVar: "DOXY_GPU_ENABLED",
 	}
-	constrainUser = cli.BoolFlag{
-		Name: "user-pinning",
-		Usage: "Pin user within container to the UID calling the command",
-		EnvVar: "DOXY_USER_PINNING_ENABLED",
-	}
 	debugFlag = cli.BoolFlag{
 		Name: "debug",
 		Usage: "Print proxy requests",
@@ -59,10 +54,15 @@ var (
 		Usage: "File holding line-separated regex-patterns to be allowed (comments allowed, use #)",
 		EnvVar: "DOXY_PATTERN_FILE",
 	}
+	pinUserBool = cli.BoolFlag{
+		Name: "pin-user",
+		Usage: "Pin user within container to the UID calling the command",
+		EnvVar: "DOXY_USER_PINNING_ENABLED",
+	}
 	pinUserFlag = cli.StringFlag{
-		Name:  "pin-user",
-		Usage: "Overwrite `--user` with given value",
-		EnvVar: "DOXY_PIN_USER",
+		Name:  "user",
+		Usage: "Overwrite `--user` with given value (if pin-user is set)",
+		EnvVar: "DOXY_USER",
 	}
 	deviceFileFlag = cli.StringFlag{
 		Name:  "device-file",
@@ -83,8 +83,9 @@ func EvalOptions(cfg *config.Config) (po []proxy.ProxyOption) {
 	po = append(po, proxy.WithGpuValue(gpu))
 	devMaps, _ := cfg.String("device-mappings")
 	po = append(po, proxy.WithDevMappings(strings.Split(devMaps,",")))
-	pinUser, _ := cfg.String("pin-user")
-	po = append(po, proxy.WithPinUserValue(pinUser))
+	pinUser, _ := cfg.String("user")
+	pinUserBool, _ := cfg.Bool("pin-user")
+	po = append(po, proxy.WithPinUser(pinUserBool, pinUser))
 	return
 }
 
@@ -155,6 +156,7 @@ func main() {
 		patternFileFlag,
 		proxyPatternKey,
 		bindAddFlag,
+		pinUserBool,
 		pinUserFlag,
 	}
 	app.Action = RunApp

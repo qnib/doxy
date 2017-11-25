@@ -48,8 +48,9 @@ var (
 )
 
 type Proxy struct {
+	po ProxyOptions
 	dockerSocket, newSocket, pinUser 	string
-	debug, gpu 							bool
+	debug, gpu, pinUserEnabled			bool
 	patterns 							[]string
 	bindMounts,devMappings				[]string
 }
@@ -65,6 +66,8 @@ func NewProxy(opts ...ProxyOption) Proxy {
 		debug: options.Debug,
 		gpu: options.Gpu,
 		pinUser: options.PinUser,
+		pinUserEnabled: options.PinUserEnabled,
+		po: options,
 		patterns: options.Patterns,
 		bindMounts: options.BindMounts,
 		devMappings: options.DevMappings,
@@ -77,12 +80,13 @@ func (p *Proxy) GetOptions() map[string]interface{} {
 		"proxy-socket": p.newSocket,
 		"debug": p.debug,
 		"patterns": p.patterns,
+		"pin-user": p.pinUserEnabled,
 	}
 	return opt
 }
 
 func (p *Proxy) Run() {
-	upstream := NewUpstream(p.dockerSocket, p.patterns, p.bindMounts, p.devMappings, p.gpu, p.pinUser)
+	upstream := NewUpstream(p.dockerSocket, p.patterns, p.bindMounts, p.devMappings, p.gpu, p.pinUser, p.pinUserEnabled)
 	sigc := make(chan os.Signal, 1)
 	signal.Notify(sigc, os.Interrupt, os.Kill, syscall.SIGTERM)
 	l, err := ListenToNewSock(p.newSocket, sigc)

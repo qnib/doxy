@@ -1,19 +1,17 @@
 package proxy
 
+
 type ProxyOptions struct {
-	DockerSocket 	string
-	ProxySocket 	string
-	PinUser			string
-	Debug,Gpu 			bool
-	Patterns 		[]string
-	BindMounts		[]string
-	DevMappings		[]string
+	DockerSocket,ProxySocket,PinUser 	string
+	Debug,Gpu,PinUserEnabled 			bool
+	Patterns,BindMounts,DevMappings 	[]string
 }
 
 var defaultProxyOptions = ProxyOptions{
 	DockerSocket: DOCKER_SOCKET,
 	ProxySocket: PROXY_SOCKET,
 	PinUser: "",
+	PinUserEnabled: false,
 	Debug: false,
 	Gpu: false,
 	Patterns: []string{},
@@ -23,9 +21,10 @@ var defaultProxyOptions = ProxyOptions{
 
 type ProxyOption func(*ProxyOptions)
 
-func WithPinUserValue(pu string) ProxyOption {
+func WithPinUser(pub bool, pu string) ProxyOption {
 	return func(o *ProxyOptions) {
 		o.PinUser = pu
+		o.PinUserEnabled = pub
 	}
 }
 func WithDockerSocket(s string) ProxyOption {
