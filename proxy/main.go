@@ -48,10 +48,10 @@ var (
 )
 
 type Proxy struct {
-	dockerSocket, newSocket string
-	debug, gpu 				bool
-	patterns 				[]string
-	bindMounts,devMappings	[]string
+	dockerSocket, newSocket, pinUser 	string
+	debug, gpu 							bool
+	patterns 							[]string
+	bindMounts,devMappings				[]string
 }
 
 func NewProxy(opts ...ProxyOption) Proxy {
@@ -64,6 +64,7 @@ func NewProxy(opts ...ProxyOption) Proxy {
 		newSocket: options.ProxySocket,
 		debug: options.Debug,
 		gpu: options.Gpu,
+		pinUser: options.PinUser,
 		patterns: options.Patterns,
 		bindMounts: options.BindMounts,
 		devMappings: options.DevMappings,
@@ -81,7 +82,7 @@ func (p *Proxy) GetOptions() map[string]interface{} {
 }
 
 func (p *Proxy) Run() {
-	upstream := NewUpstream(p.dockerSocket, p.patterns, p.bindMounts, p.devMappings, p.gpu)
+	upstream := NewUpstream(p.dockerSocket, p.patterns, p.bindMounts, p.devMappings, p.gpu, p.pinUser)
 	sigc := make(chan os.Signal, 1)
 	signal.Notify(sigc, os.Interrupt, os.Kill, syscall.SIGTERM)
 	l, err := ListenToNewSock(p.newSocket, sigc)
@@ -94,6 +95,7 @@ func (p *Proxy) Run() {
 	}
 	n.UseHandler(upstream)
 	log.Printf("Serving proxy on '%s'", p.newSocket)
+
 	if err = http.Serve(l, n); err != nil {
 		panic(err)
 	}
