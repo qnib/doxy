@@ -146,7 +146,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "Proxy Docker unix socket to filter out insecure, harmful requests."
 	app.Usage = "doxy [options]"
-	app.Version = "0.2.3"
+	app.Version = "0.2.4"
 	app.Flags = []cli.Flag{
 		dockerSocketFlag,
 		proxySocketFlag,
