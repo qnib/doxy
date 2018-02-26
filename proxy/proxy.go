@@ -21,15 +21,15 @@ import (
 
 // UpStream creates upstream handler struct
 type UpStream struct {
-	Name  			string
-	proxy 			http.Handler
+	Name  				string
+	proxy 				http.Handler
 	// TODO: Kick out separat config options and use more generic one
-	allowed 		[]*regexp.Regexp
-	bindMounts 		[]string
-	devMappings 	[]string
-	gpu 			bool
-	pinUser 		string
-	pinUserEnabled	bool
+	allowed 			[]*regexp.Regexp
+	bindMounts 			[]string
+	devMappings 		[]string
+	gpu 				bool
+	pinUser,cudaLibPath	string
+	pinUserEnabled		bool
 }
 
 // UnixSocket just provides the path, so that I can test it
@@ -81,11 +81,12 @@ func NewUpstreamPO(po ProxyOptions) *UpStream {
 		gpu: po.Gpu,
 		pinUser: po.PinUser,
 		pinUserEnabled: po.PinUserEnabled,
+		cudaLibPath: po.CudaLibPath,
 	}
 	return upstream
 }
 // NewUpstream returns a new socket (magic)
-func NewUpstream(socket string, regs []string, binds []string, devs []string, gpu bool, pinUser string, pinUserB bool) *UpStream {
+func NewUpstream(socket string, regs []string, binds []string, devs []string, gpu bool, pinUser string, pinUserB bool, cudaLibPath string) *UpStream {
 	us := NewUnixSocket(socket)
 	a := []*regexp.Regexp{}
 	for _, r := range regs {
@@ -101,6 +102,7 @@ func NewUpstream(socket string, regs []string, binds []string, devs []string, gp
 		gpu: gpu,
 		pinUser: pinUser,
 		pinUserEnabled: pinUserB,
+		cudaLibPath: cudaLibPath,
 	}
 	return upstream
 }
@@ -151,16 +153,30 @@ func (u *UpStream) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		}
 		// prepare devMappings
 		devMappings := []string{}
-		for _, dev := range u.devMappings {
+		for _, dev := range GPUS {
 			devMappings = append(devMappings, dev)
 		}
 		// In case GPU support is enabled add devices and mounts
 		if u.gpu {
 			fmt.Println("Add GPU stuff")
 			// TODO: Be smarter about the version of the driver
-			hostConfig.Binds = append(hostConfig.Binds, "/usr/lib/nvidia-384/:/usr/local/nvidia/")
+			if u.cudaLibPath != "" {
+				hostConfig.Binds = append(hostConfig.Binds, fmt.Sprintf("%s:/usr/local/nvidia/", u.cudaLibPath))
+			}
 			config.Env = append(config.Env, "PATH=/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin")
 			config.Env = append(config.Env, "LD_LIBRARY_PATH=/usr/local/nvidia/")
+			for _, dev := range devMappings {
+				if dev == "" {
+					continue
+				}
+				fmt.Printf("New device: %s\n", dev)
+
+				dm, err := createDevMapping(dev)
+				if err != nil {
+					continue
+				}
+				hostConfig.Devices = append(hostConfig.Devices, dm)
+			}
 		}
 		if u.pinUserEnabled {
 			fmt.Print("Alter User setting ")
@@ -184,18 +200,7 @@ func (u *UpStream) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			fmt.Printf("New bindmount: %s\n", bMount)
 			hostConfig.Binds = append(hostConfig.Binds, bMount)
 		}
-		for _, dev := range devMappings {
-			if dev == "" {
-				continue
-			}
-			fmt.Printf("New device: %s\n", dev)
 
-			dm, err := createDevMapping(dev)
-			if err != nil {
-				continue
-			}
-			hostConfig.Devices = append(hostConfig.Devices, dm)
-		}
 		fmt.Printf("Mounts: %v\n", hostConfig.Binds)
 		cfgBody := configWrapper{
 			Config:           config,

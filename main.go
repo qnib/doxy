@@ -64,6 +64,11 @@ var (
 		Usage: "Overwrite `--user` with given value (if pin-user is set)",
 		EnvVar: "DOXY_USER",
 	}
+	cudaLibPathFlag = cli.StringFlag{
+		Name:  "cuda-lib-path",
+		Usage: "Path to cuda libraries.",
+		EnvVar: "DOXY_CUDA_LIB_PATH",
+	}
 	deviceFileFlag = cli.StringFlag{
 		Name:  "device-file",
 		Value: proxy.DEVICE_FILE,
@@ -86,6 +91,8 @@ func EvalOptions(cfg *config.Config) (po []proxy.ProxyOption) {
 	pinUser, _ := cfg.String("user")
 	pinUserBool, _ := cfg.Bool("pin-user")
 	po = append(po, proxy.WithPinUser(pinUserBool, pinUser))
+	cudalibPath, _ := cfg.String("cuda-lib-path")
+	po = append(po, proxy.WithCudaLibPath(cudalibPath))
 	return
 }
 
@@ -115,7 +122,7 @@ func EvalDevicesOpts(cfg *config.Config) (proxy.ProxyOption) {
 	defer reader.Close()
 	devices := []string{}
 	if err != nil {
-		return proxy.WithDevMappings(proxy.DEVICES)
+		return proxy.WithDevMappings([]string{})
 	}
 	devices, err  = proxy.ReadLineFile(reader)
 	if err != nil {
@@ -158,6 +165,7 @@ func main() {
 		bindAddFlag,
 		pinUserBool,
 		pinUserFlag,
+		cudaLibPathFlag,
 	}
 	app.Action = RunApp
 	app.Run(os.Args)

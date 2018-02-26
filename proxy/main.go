@@ -30,15 +30,14 @@ var (
 	}
 	HPC_PAT = []string{
 		`^/(v\d\.\d+/)?containers(/\w+)?/(json|stats|top|logs|wait|create|start|run|kill)$`,
-		`^/(v\d\.\d+/)?images(/\w+)?/(json|pull)$`,
+		`^/(v\d\.\d+/)?images(/\w+)?/(json|pull|create)$`,
 		`^/(v\d\.\d+/)?info$`,
 		`^/(v\d\.\d+/)?images/(pull|create)$`,
 		`^/(v\d\.\d+/)?version$`,
 		"^/_ping$",
 	}
-	DEVICES = []string{
+	GPUS = []string{
 		"/dev/nvidia0:/dev/nvidia0:rwm",
-		"/dev/nvidia-uvm:/dev/nvidia-uvm:rwm",
 		"/dev/nvidiactl:/dev/nvidiactl:rwm",
 	}
 	PATTERNS = map[string][]string{
@@ -49,10 +48,10 @@ var (
 
 type Proxy struct {
 	po ProxyOptions
-	dockerSocket, newSocket, pinUser 	string
-	debug, gpu, pinUserEnabled			bool
-	patterns 							[]string
-	bindMounts,devMappings				[]string
+	dockerSocket, newSocket, pinUser,cudaLibPath	string
+	debug, gpu, pinUserEnabled						bool
+	patterns 										[]string
+	bindMounts,devMappings							[]string
 }
 
 func NewProxy(opts ...ProxyOption) Proxy {
@@ -71,6 +70,7 @@ func NewProxy(opts ...ProxyOption) Proxy {
 		patterns: options.Patterns,
 		bindMounts: options.BindMounts,
 		devMappings: options.DevMappings,
+		cudaLibPath: options.CudaLibPath,
 	}
 }
 
@@ -86,7 +86,7 @@ func (p *Proxy) GetOptions() map[string]interface{} {
 }
 
 func (p *Proxy) Run() {
-	upstream := NewUpstream(p.dockerSocket, p.patterns, p.bindMounts, p.devMappings, p.gpu, p.pinUser, p.pinUserEnabled)
+	upstream := NewUpstream(p.dockerSocket, p.patterns, p.bindMounts, p.devMappings, p.gpu, p.pinUser, p.pinUserEnabled, p.cudaLibPath)
 	sigc := make(chan os.Signal, 1)
 	signal.Notify(sigc, os.Interrupt, os.Kill, syscall.SIGTERM)
 	l, err := ListenToNewSock(p.newSocket, sigc)

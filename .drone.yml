@@ -1,6 +1,6 @@
 workspace:
-  base: /drone/src
-  path: /usr/local/src/github.com/qnib/doxy
+  base: /usr/local/
+  path: src/github.com/qnib/doxy
 
 pipeline:
   alpine:
